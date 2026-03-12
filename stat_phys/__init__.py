@@ -2,15 +2,31 @@
 stat_phys: a Python library for performing statistical physics simulations.
 
 Modules:
-- canonical: Canonical ensemble simulations
+- ensembles.canonical: canonical ensemble simulations
+- system: object-oriented physical systems description
 """
 
-version = '0.1.0'
+version = '0.2.0'
 author = 'Lorenzo Avanzini'
 license = 'MIT'
-modules = ['canonical']
+modules = ['canonical', 'system']
+__all__ = ['CanonicalMC', 'System', 'version', 'author', 'license']
 
-__all__ = ['CanonicalMC', 'version', 'author', 'license']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
