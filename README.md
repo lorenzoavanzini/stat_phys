@@ -4,7 +4,7 @@
 
 ## Structure
 
-Currently at version 0.2.0, the library has the following structure:
+Currently at version 0.3.0, the library has the following structure:
 
 - `stat_phys/`
   - `__init__.py`
@@ -75,18 +75,21 @@ system = System(
 ensemble = CanonicalMC(system = system)
 
 # run a temperature sweep from Tmax to Tmin (simulated annealing)
-results, acceptance_rates = ensemble.run(
+results, autocorr_times, acceptance_rates = ensemble.sweep(
     Tstart = Tmax,
     Tend = Tmin,
     n_T = n_T,
-    n_sample = 2500,
-    thermal_steps = 250
+    n_sample = 1000,
+    thermal_steps = 200,
+    thinning = 300,
+    progress = True
 )
 ```
 
-Notice that the results of the run method is a NumPy array of shape (n_T,n_samples,n_obs). In order to access the first observable (the only one in this case) and to consider its mean value at fixed temperature, we have to write as follows
+Notice that the results of the sweep method is a NumPy array of shape (n_T,n_samples,n_obs). In order to access the first observable (the only one in this case) and to consider its mean value at fixed temperature, we have to write as follows
 
 ```python
+
 # average over samples to get mean energy at each temperature
 m = np.mean(results[:,:,0], axis = 1)
 ```
@@ -94,16 +97,19 @@ m = np.mean(results[:,:,0], axis = 1)
 Then we can plot the mean energy of the system and the acceptance rate of the Monte Carlo engine over the temperature. 
 
 ```python
+#get autocorrelation time of the energy chain
+autocorr_time = autocorr_times[:, 0]
+
 # analytical solution: probability of occupying the level with energy 1
 p1_analytical = np.exp(-1/T) / (1 + np.exp(-1/T))
 
 # plot mean energy: MC vs analytical
-fig, axes = plt.subplots(2, 1, figsize = (8, 10))
-axes[0].plot(T, m, color = 'red', label = 'MC simulation', lw = 0.7, alpha = 0.75)
+fig, axes = plt.subplots(3, 1, figsize = (8, 10))
+axes[0].plot(T, m, color = 'red', label = 'MC simulation', lw = 1, alpha = 0.75)
 axes[0].plot(T, p1_analytical, color = 'black', label = 'analytical', lw = 1.0, linestyle = '--')
 axes[0].set_xlabel('T')
 axes[0].set_ylabel(r'$\langle E \rangle / N$')
-axes[0].set_title('Two-level system')
+axes[0].set_title(f'Two-level system Energy (N={N})')
 axes[0].legend(loc = 'best')
 axes[0].grid()
 
@@ -115,12 +121,26 @@ axes[1].set_title('Acceptance rate')
 axes[1].legend(loc = 'best')
 axes[1].grid()
 
+#plot autocorrelation time as a function of temperature
+axes[2].plot(T, autocorr_time, color = 'purple', label = 'autocorrelation time', lw = 0.7, alpha = 0.75)
+axes[2].set_xlabel('T')
+axes[2].set_ylabel('autocorrelation time')
+axes[2].set_title('Energy autocorrelation time')
+axes[2].legend(loc = 'best')
+axes[2].grid()
+
 plt.tight_layout()
-plt.savefig('two_level.png')
+plt.savefig('two_levels.png')
 ```
 
 
 ## Changelog
+
+### v0.3.0
+- Added `thinning` parameter to `metropolis` for subsampling the chain
+- Added autocorrelation time calculation (`_autocorr_time`, `_C`, `_rho`)
+- Added autocorrelation time output to `metropolis` and `sweep`
+- Renamed `run` to `sweep` for clarity
 
 ### v0.2.0
 - Added `System` class in `system` module to describe a generic physical system
