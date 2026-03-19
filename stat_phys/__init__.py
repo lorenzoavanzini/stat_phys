@@ -6,7 +6,7 @@ Modules:
 - system: object-oriented physical systems description
 """
 
-version = '0.2.0'
+version = '0.3.0'
 author = 'Lorenzo Avanzini'
 license = 'MIT'
 modules = ['canonical', 'system']
