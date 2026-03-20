@@ -4,7 +4,7 @@
 
 ## Structure
 
-Currently at version 0.3.1, the library has the following structure:
+Currently at version 0.3.2, the library has the following structure:
 
 - `stat_phys/`
   - `__init__.py`
@@ -82,8 +82,8 @@ results, autocorr_times, acceptance_rates = ensemble.sweep(
     Tstart = Tmax,
     Tend = Tmin,
     n_T = n_T,
-    n_sample = 1000,
-    thermal_steps = 200,
+    n_sample = 2000,
+    thermal_steps = 500,
     thinning = 300,
     progress = True
 )
@@ -92,23 +92,29 @@ results, autocorr_times, acceptance_rates = ensemble.sweep(
 Notice that the results of the sweep method is a NumPy array of shape (n_T,n_samples,n_obs). In order to access the first observable (the only one in this case) and to consider its mean value at fixed temperature, we have to write as follows
 
 ```python
-
 # average over samples to get mean energy at each temperature
 m = np.mean(results[:,:,0], axis = 1)
-```
 
-Then we can plot the mean energy of the system and the acceptance rate of the Monte Carlo engine over the temperature. 
-
-```python
 #get autocorrelation time of the energy chain
 autocorr_time = autocorr_times[:, 0]
+
+#get statistical errors
+sigma = ensemble.std_error(results[:,:,0], autocorr_time)
 
 # analytical solution: probability of occupying the level with energy 1
 p1_analytical = np.exp(-1/T) / (1 + np.exp(-1/T))
 
+#get chi2 and dof
+chi2, dof, excluded = ensemble.chi2(results[:,:,0], autocorr_time, p1_analytical)
+```
+We also obtained the autocorrelation time and the statistical error as functions of temperature. We calculated the chi squared statistics, the number of degrees of fredom and the number of points excluded from the chi squared calculation. Then we can plot the mean energy of the system, the acceptance rate of the Monte Carlo engine and the autocorrelation time over the temperature. 
+
+```python
 # plot mean energy: MC vs analytical
-fig, axes = plt.subplots(3, 1, figsize = (8, 10))
-axes[0].plot(T, m, color = 'red', label = 'MC simulation', lw = 1, alpha = 0.75)
+fig, axes = plt.subplots(3, 1, figsize = (12, 10))
+axes[0].errorbar(T, m, yerr = sigma, color = 'red', label = f'MC simulation \n $\\chi^2/dof$ = {chi2/dof:.3f} \n excluded = {excluded}', 
+                 lw = 0.7, alpha = 0.75, capsize = 5)
+
 axes[0].plot(T, p1_analytical, color = 'black', label = 'analytical', lw = 1.0, linestyle = '--')
 axes[0].set_xlabel('T')
 axes[0].set_ylabel(r'$\langle E \rangle / N$')
@@ -143,6 +149,11 @@ pytest -v
 ```
 
 ## Changelog
+
+### v0.3.2
+- Added `std_error` method for statistical error estimation accounting for autocorrelation
+- Added `chi2` method for chi-squared goodness-of-fit test against theoretical predictions
+- Fixed numerical warnings in `std_error`
 
 ### v0.3.1
 - Added `test` sub-folder with `test_system.py` and `test_canonical.py` for `pytest` testing
