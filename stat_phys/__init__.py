@@ -5,7 +5,7 @@ Modules:
 - ensembles.canonical: canonical ensemble simulations
 - system: object-oriented physical systems description
 """
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 __author__ = 'Lorenzo Avanzini'
 __license__ = 'MIT'
 __modules__ = ['canonical', 'system']

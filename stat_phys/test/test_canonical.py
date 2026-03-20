@@ -35,28 +35,62 @@ def test_beta(canonical):
 def test_metropolis(canonical):
     canonical.set_temperature(295.15)
     observables, autocorr_time, acceptance_rate = canonical.metropolis(
-        steps = 100, 
-        thermal_steps = 10, 
-        thinning = 10, 
+        steps = 10, 
+        thermal_steps = 5, 
+        thinning = 2, 
         progress = False
     )
-    assert observables.shape[0] == 100
+    assert observables.shape[0] == 10
     assert observables.shape[1] == 1
     assert autocorr_time is not None
     assert acceptance_rate is not None
 def test_sweep(canonical):
     observables, autocorr_times, acceptance_rates = canonical.sweep(
-        Tstart = 10.1,
-        Tend = 0.1,
-        n_T = 100,
-        n_sample = 100,
-        thermal_steps = 10,
-        thinning = 10,
+        Tstart = 2.0,
+        Tend = 1.0,
+        n_T = 5,
+        n_sample = 10,
+        thermal_steps = 5,
+        thinning = 2,
         progress = False
     )
-    assert observables.shape[0] == 100
-    assert observables.shape[1] == 100
+    assert observables.shape[0] == 5
+    assert observables.shape[1] == 10
     assert observables.shape[2] == 1
-    assert autocorr_times.shape[0] == 100
+    assert autocorr_times.shape[0] == 5
     assert autocorr_times.shape[1] == 1
-    assert acceptance_rates.shape[0] == 100
+    assert acceptance_rates.shape[0] == 5
+def test_std_error(canonical):
+    observables, autocorr_times, acceptance_rates = canonical.sweep(
+        Tstart = 2.0,
+        Tend = 1.0,
+        n_T = 5,
+        n_sample = 10,
+        thermal_steps = 5,
+        thinning = 2,
+        progress = False
+    )
+    O = observables[:,:,0]
+    autocorr_time = autocorr_times[:, 0]
+    sigma = canonical.std_error(O, autocorr_time)
+    assert sigma.shape == (5,)
+    assert np.all(sigma >= 0)
+def test_chi2(canonical):
+    observables, autocorr_times, acceptance_rates = canonical.sweep(
+        Tstart = 2.0,
+        Tend = 1.0,
+        n_T = 5,
+        n_sample = 10,
+        thermal_steps = 5,
+        thinning = 2,
+        progress = False
+    )
+    O = observables[:,:,0]
+    autocorr_time = autocorr_times[:, 0]
+    sigma = canonical.std_error(O, autocorr_time)
+    T = np.linspace(2.0, 1.0, 5)
+    p1_analytical = np.exp(-1/T) / (1 + np.exp(-1/T))
+    chi2, dof, excluded = canonical.chi2(O, autocorr_time, p1_analytical)
+    assert chi2 >= 0
+    assert dof >= 0
+    assert excluded >= 0

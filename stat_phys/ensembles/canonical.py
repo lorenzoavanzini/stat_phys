@@ -52,6 +52,23 @@ class CanonicalMC:
             tau += rho_t
         return tau
 
+    def std_error(self, chain, autocorr_time): #chain: n_T, n_samples / autocorr_time: n_T
+        safe_autocorr = np.where(autocorr_time == 0, 1, autocorr_time)
+        Neff = np.where(autocorr_time == 0, 0, chain.shape[1] / safe_autocorr)
+        sigma_obs = np.std(chain, axis = 1)
+        safe_Neff = np.where(Neff <= 0, 1, Neff)
+        sigma = np.where(Neff <= 0, 0, sigma_obs / np.sqrt(safe_Neff))
+        return sigma #n_T
+
+    def chi2(self, chain, autocorr_time, th_values): #chain: n_T, n_samples / autocorr_time: n_T / th_values(T): n_T
+        mi_th = th_values
+        mi_obs = np.mean(chain, axis = 1)
+        sigma_i = self.std_error(chain, autocorr_time)
+        mask = sigma_i > 0
+        dof = np.sum(mask) - 1
+        excluded = np.sum(~mask)
+        return np.sum((mi_th[mask] - mi_obs[mask])**2 / sigma_i[mask]**2), dof, excluded
+        
     def metropolis(self, steps, thermal_steps, thinning = 1, correlation = True, c = 5, cutoff = 1e-5, progress = True):
         observables = np.zeros([steps, self.system.n_obs])
         total_steps = thermal_steps+steps*thinning
@@ -113,5 +130,52 @@ class CanonicalMC:
                                                                                            cutoff = cutoff, progress = progress)
 
         return observables, autocorr_times, acceptance_rates #n_T, n_sample, n_obs/ n_T, n_obs / n_T
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
