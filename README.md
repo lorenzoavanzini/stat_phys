@@ -4,13 +4,16 @@
 
 ## Structure
 
-Currently at version 0.3.0, the library has the following structure:
+Currently at version 0.3.1, the library has the following structure:
 
 - `stat_phys/`
   - `__init__.py`
   - `system.py`
   - `ensembles/`
     - `canonical.py`
+  - `test`
+    - `test_system.py`
+    - `test_canonical.py`
 
 ## Modules
 
@@ -133,8 +136,17 @@ plt.tight_layout()
 plt.savefig('two_levels.png')
 ```
 
+## Testing with Pytest
+To test the library with `pytest`, navigate to the `stat_phys` folder in your terminal and run:
+```bash
+pytest -v
+```
 
 ## Changelog
+
+### v0.3.1
+- Added `test` sub-folder with `test_system.py` and `test_canonical.py` for `pytest` testing
+- Added `conftest.py` for `pytest` support
 
 ### v0.3.0
 - Added `thinning` parameter to `metropolis` for subsampling the chain
