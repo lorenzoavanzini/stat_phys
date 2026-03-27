@@ -131,51 +131,28 @@ class CanonicalMC:
 
         return observables, autocorr_times, acceptance_rates #n_T, n_sample, n_obs/ n_T, n_obs / n_T
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def sweep_save(self, file, kb, chain, autocorr_times, acceptance_rates, Tstart, Tend, n_T, 
+                   n_sample, thermal_steps, thinning, c = 5, cutoff = 1e-5, thermal_each_T = False):
+        np.savez(file, kb = kb, chain = chain, autocorr_times = autocorr_times, 
+                acceptance_rates = acceptance_rates, Tstart = Tstart, Tend = Tend,
+                n_T = n_T, n_sample = n_sample, thermal_steps = thermal_steps,
+                thinning = thinning, c = c, cutoff = cutoff, thermal_each_T = thermal_each_T)
+        
+    def sweep_load(self, file):
+        data = np.load(file)
+        return {
+            'kb': float(data['kb']),
+            'chain': data['chain'],
+            'autocorr_times': data['autocorr_times'],
+            'acceptance_rates': data['acceptance_rates'],
+            'Tstart': float(data['Tstart']),
+            'Tend': float(data['Tend']),
+            'n_T': int(data['n_T']),
+            'n_sample': int(data['n_sample']),
+            'thermal_steps': int(data['thermal_steps']),
+            'thinning': int(data['thinning']),
+            'c': float(data['c']),
+            'cutoff': float(data['cutoff']),
+            'thermal_each_T': bool(data['thermal_each_T'])
+        }
 
